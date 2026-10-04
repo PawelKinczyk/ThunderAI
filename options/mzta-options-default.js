@@ -132,6 +132,7 @@ export const prefs_default = {
     max_prompt_length: 30000,   // max string length for prompt
     add_tags: false,
     add_tags_maxnum: 3,
+    add_tags_max_body_chars: 0,  // Max characters of the email content sent for tagging, 0 = no limit
     add_tags_hide_exclusions: false,
     add_tags_exclusions_exact_match: false,
     add_tags_first_uppercase: true,

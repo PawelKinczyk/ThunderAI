@@ -353,15 +353,27 @@ export class mzta_Menus {
                 this.logger.log("mail_plain_text_part: " + JSON.stringify(msg_text.plain_part));
             }
 
+            // Add tags can limit the email content sent to the model, so that very long
+            // emails still fit the context window of small (local) models. Local copies
+            // only: curr_prompt.body_text/selection_text above keep the full content.
+            let prompt_content = { body_text: body_text, selection_text: selection_text, selection_html: selection_html, msg_text: msg_text };
+            if (curr_prompt.id === 'prompt_add_tags') {
+                let prefs_limit = await browser.storage.sync.get({ add_tags_max_body_chars: prefs_default.add_tags_max_body_chars });
+                prompt_content = taPromptUtils.limitMailContent(prompt_content, prefs_limit.add_tags_max_body_chars);
+                if (prompt_content.body_text !== body_text || prompt_content.selection_text !== selection_text) {
+                    this.logger.log("Add tags: email content truncated to " + prefs_limit.add_tags_max_body_chars + " characters.");
+                }
+            }
+
             fullPrompt = await taPromptUtils.preparePrompt({
                 curr_prompt: curr_prompt,
                 curr_message: curr_message,
                 chatgpt_lang: chatgpt_lang,
-                selection_text: selection_text,
-                selection_html: selection_html,
-                body_text: body_text,
+                selection_text: prompt_content.selection_text,
+                selection_html: prompt_content.selection_html,
+                body_text: prompt_content.body_text,
                 subject_text: await getMailSubject(tabs[0]),
-                msg_text: msg_text,
+                msg_text: prompt_content.msg_text,
                 only_typed_text: only_typed_text,
                 only_quoted_text: only_quoted_text,
                 tags_full_list: tags_full_list

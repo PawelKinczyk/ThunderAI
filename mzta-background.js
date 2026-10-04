@@ -2116,6 +2116,7 @@ async function processEmails(args) {
     if (addTagsAuto || spamFilter || summarizeOnReceive || summarizeSendersActive || translateOnReceive || translate) {
         let prefs_aats = await browser.storage.sync.get({
             add_tags_maxnum: prefs_default.add_tags_maxnum,
+            add_tags_max_body_chars: prefs_default.add_tags_max_body_chars,
             connection_type: prefs_default.connection_type,
             add_tags_force_lang: prefs_default.add_tags_force_lang,
             default_chatgpt_lang: prefs_default.default_chatgpt_lang,
@@ -2246,13 +2247,18 @@ async function processEmails(args) {
                     let tags_full_list = await getTagsList();
                     //  console.log(">>>>>>>>>>>>> curr_prompt_add_tags: " + JSON.stringify(curr_prompt_add_tags));
                     let chatgpt_lang = await taPromptUtils.getDefaultLang(curr_prompt_add_tags);
+                    // Truncated copies: body_text and msg_text are shared with the other features.
+                    let addtags_content = taPromptUtils.limitMailContent({ body_text: body_text, msg_text: msg_text }, prefs_aats.add_tags_max_body_chars);
+                    if (addtags_content.body_text !== body_text) {
+                        taLog.log("Add tags: email content truncated to " + prefs_aats.add_tags_max_body_chars + " characters (original length: " + body_text.length + ").");
+                    }
                     specialFullPrompt_add_tags = await taPromptUtils.preparePrompt({
                         curr_prompt: curr_prompt_add_tags,
                         curr_message: message,
                         chatgpt_lang: chatgpt_lang,
-                        body_text: body_text,
+                        body_text: addtags_content.body_text,
                         subject_text: curr_fullMessage.headers.subject,
-                        msg_text: msg_text,
+                        msg_text: addtags_content.msg_text,
                         tags_full_list: tags_full_list
                     });
                     specialFullPrompt_add_tags = taPromptUtils.finalizePrompt_add_tags(specialFullPrompt_add_tags, prefs_aats.add_tags_maxnum, prefs_aats.add_tags_force_lang, prefs_aats.default_chatgpt_lang, prefs_aats.add_tags_auto_uselist, prefs_aats.add_tags_auto_uselist_list);

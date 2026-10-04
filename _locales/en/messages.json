@@ -973,6 +973,14 @@
     "message": "The maximum number of tags proposed by the AI. Set to 0 if you don't want to limit the number of tags.",
     "description": ""
   },
+  "prefs_OptionText_add_tags_max_body_chars": {
+    "message": "Maximum email length (characters)",
+    "description": ""
+  },
+  "prefs_OptionText_add_tags_max_body_chars_Info": {
+    "message": "The email content sent to the AI for tagging is cut to this number of characters. Useful with local models that have a small context window (one token is roughly 4 characters). Set to 0 if you don't want to limit the length.",
+    "description": ""
+  },
   "prompt_add_tags_maxnum": {
     "message": "Limit the number of tags to",
     "description": "" 

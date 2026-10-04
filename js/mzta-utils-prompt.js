@@ -97,6 +97,39 @@ export const taPromptUtils = {
         return fullPrompt;
     },
 
+    // Cuts a text to about maxChars characters, preferring a word boundary near the end.
+    // Used to keep very long emails inside the context window of small (local) models.
+    // maxChars <= 0 means no limit.
+    truncateText(text, maxChars){
+        if(!(maxChars > 0) || typeof text !== 'string' || text.length <= maxChars){
+            return text;
+        }
+        let cutPos = text.lastIndexOf(' ', maxChars);
+        if(cutPos < maxChars * 0.9){
+            cutPos = maxChars;
+        }
+        return text.substring(0, cutPos).trimEnd() + ' [...]';
+    },
+
+    // Returns copies of the email content fields with every text truncated to maxChars.
+    // The originals are left untouched: on the automatic path they are shared with the
+    // other features (spamfilter, summarize, translate) processing the same message.
+    limitMailContent({ body_text = '', selection_text = '', selection_html = '', msg_text = {} } = {}, maxChars = 0){
+        const cut = (t) => taPromptUtils.truncateText(t, maxChars);
+        let limited_msg_text = { ...msg_text };
+        for (const key of ['text', 'html', 'plain_part', 'selection', 'selection_html']) {
+            if (typeof limited_msg_text[key] === 'string') {
+                limited_msg_text[key] = cut(limited_msg_text[key]);
+            }
+        }
+        return {
+            body_text: cut(body_text),
+            selection_text: cut(selection_text),
+            selection_html: cut(selection_html),
+            msg_text: limited_msg_text
+        };
+    },
+
     finalizePrompt_add_tags(fullPrompt, add_tags_maxnum, add_tags_force_lang, default_chatgpt_lang, add_tags_auto_uselist = false, add_tags_auto_uselist_list = ''){
         if(add_tags_maxnum > 0){
             fullPrompt += " \n" + browser.i18n.getMessage("prompt_add_tags_maxnum") + " " + add_tags_maxnum +".";

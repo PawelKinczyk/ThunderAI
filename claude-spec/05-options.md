@@ -190,6 +190,7 @@ its panel is always visible, so it prints `prefs_Connection_type_none` instead o
 |-----|---------|-------------|
 | `add_tags` | `false` | Enable auto-tagging feature |
 | `add_tags_maxnum` | `3` | Max tags to apply |
+| `add_tags_max_body_chars` | `0` | Max characters of the email content sent to the AI for tagging (`0` = no limit). Applied by `taPromptUtils.limitMailContent()` on both the menu path (`js/mzta-menus.js`) and the auto/batch path (`processEmails()`), to truncated copies only — see [02-prompts.md](02-prompts.md) |
 | `add_tags_hide_exclusions` | `false` | Hide excluded tags from menu |
 | `add_tags_exclusions_exact_match` | `false` | Exact match for exclusions |
 | `add_tags_first_uppercase` | `true` | Capitalize first letter of tags |

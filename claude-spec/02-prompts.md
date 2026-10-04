@@ -159,6 +159,15 @@ Some prompts trigger additional Thunderbird actions beyond just sending text to 
 
 These special prompts can have their own dedicated API integration settings (configured in the Options page). The list of these special prompts is in `options/mzta-options-default.js` as `special_prompts_with_integration`.
 
+### Add tags: email content length limit
+
+`add_tags_max_body_chars` (default `0` = no limit) caps the email content sent to the AI for tagging, so very long emails still fit the context window of small local models. Both execution paths apply it right before `taPromptUtils.preparePrompt()`:
+
+- Menu path (`js/mzta-menus.js`, popup): only when `curr_prompt.id === 'prompt_add_tags'`.
+- Auto/batch path (`processEmails()` in `mzta-background.js`, auto-tagging and context menu).
+
+`taPromptUtils.limitMailContent()` returns **truncated copies** of `body_text`, `selection_text`, `selection_html` and the `msg_text` fields (`text`, `html`, `plain_part`, `selection`, `selection_html`); the originals are never modified because on the auto path they are shared with spamfilter/summarize/translate for the same message. `taPromptUtils.truncateText()` cuts at the last space within the final 10% of the limit (hard cut otherwise) and appends ` [...]`. The limit is per field, in characters (HTML markup counts too for `{%mail_html_body%}`); headers, subject and the other placeholders are not truncated.
+
 ### Missing special prompts
 
 The lookup helpers in `js/mzta-prompts.js` (`getSpamFilterPrompt()`, `getAddTagsPrompt()`, `getSummarizePrompt()`, …) are `Array.find()` over `_special_prompts` and return `undefined` when the user has removed or corrupted the entry. Every caller must guard before using the result, and `taPromptUtils.getDefaultLang()` uses optional chaining so a missing prompt yields `''` (no forced language) instead of throwing (issue #855).
