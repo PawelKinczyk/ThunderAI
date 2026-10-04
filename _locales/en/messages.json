@@ -2499,6 +2499,14 @@
       "message": "Maximum number of characters to display in the inline summary. Set to 0 for no limit.",
       "description": ""
   },
+  "prefs_OptionText_summarize_max_body_chars": {
+      "message": "Maximum email length (characters)",
+      "description": ""
+  },
+  "prefs_OptionText_summarize_max_body_chars_Info": {
+      "message": "The content of each email sent to the AI for the summary is cut to this number of characters. Useful with local models that have a small context window (one token is roughly 4 characters). Set to 0 if you don't want to limit the length.",
+      "description": ""
+  },
   "prefs_OptionText_summarize_max_messages": {
       "message": "Max messages",
       "description": ""

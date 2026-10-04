@@ -162,6 +162,7 @@ export const prefs_default = {
     summarize_display_mode: 'inline',    // 'inline' or 'webchat'
     summarize_max_messages: 20,          // max number of messages summarized at once (webchat mode); above this the user is warned and the operation is blocked
     summarize_max_display_length: 0,     // 0 = no limit, otherwise max chars shown inline
+    summarize_max_body_chars: 0,         // 0 = no limit, otherwise max chars of each email content sent to the AI
     summarize_strip_formatting: false,   // strip HTML/markdown formatting from AI summary
     summarize_auto_senders: false,       // auto-summarize emails coming from the addresses in the list below
     summarize_auto_senders_list: [],     // sender addresses or domain patterns ("@domain.com", "*@domain.com")

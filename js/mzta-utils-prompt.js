@@ -26,6 +26,7 @@ import {
 } from './mzta-utils.js';
 import { getSpecialPrompts } from './mzta-prompts.js';
 import { prefs_default } from '../options/mzta-options-default.js';
+import { taLogger } from './mzta-logger.js';
 
 export const taPromptUtils = {
 
@@ -174,6 +175,10 @@ export const taPromptUtils = {
         const prompt_email_separator = specialPrompts.find(p => p.id === 'prompt_summarize_email_separator');
 
         const chatgpt_lang = await taPromptUtils.getDefaultLang(prompt);
+        // Max characters of each email content sent to the AI (0 = no limit), so that long
+        // emails still fit the context window of small (local) models.
+        const prefs_limit = await browser.storage.sync.get({ summarize_max_body_chars: prefs_default.summarize_max_body_chars, do_debug: prefs_default.do_debug });
+        const taLog = new taLogger('buildSummaryPrompt', prefs_limit.do_debug);
         // Fetched ONCE here, not per message: the tag list is global to Thunderbird and
         // every mail in the loop resolves {%tags_current_email%} against the same one.
         const tags_full_list = await getTagsList();
@@ -206,14 +211,18 @@ export const taPromptUtils = {
             if (bodyText.length === 0) {
                 bodyText = cleanupNewlines(bodyHtml.text || '');
             }
+            const limited_content = taPromptUtils.limitMailContent({ body_text: bodyText, msg_text: bodyHtml }, prefs_limit.summarize_max_body_chars);
+            if (limited_content.body_text !== bodyText) {
+                taLog.log("Summarize: email content truncated to " + prefs_limit.summarize_max_body_chars + " characters (original length: " + bodyText.length + ").");
+            }
 
             messages_list.push(await taPromptUtils.preparePrompt({
                 curr_prompt: prompt_email,
                 curr_message: entry.message,
                 chatgpt_lang: chatgpt_lang,
-                body_text: bodyText,
+                body_text: limited_content.body_text,
                 subject_text: entry.fullMessage.headers.subject,
-                msg_text: bodyHtml,
+                msg_text: limited_content.msg_text,
                 tags_full_list: tags_full_list,
             }));
         }

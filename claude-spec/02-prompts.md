@@ -168,6 +168,10 @@ These special prompts can have their own dedicated API integration settings (con
 
 `taPromptUtils.limitMailContent()` returns **truncated copies** of `body_text`, `selection_text`, `selection_html` and the `msg_text` fields (`text`, `html`, `plain_part`, `selection`, `selection_html`); the originals are never modified because on the auto path they are shared with spamfilter/summarize/translate for the same message. `taPromptUtils.truncateText()` cuts at the last space within the final 10% of the limit (hard cut otherwise) and appends ` [...]`. The limit is per field, in characters (HTML markup counts too for `{%mail_html_body%}`); headers, subject and the other placeholders are not truncated.
 
+### Summarize: email content length limit
+
+`summarize_max_body_chars` (default `0` = no limit) is the summarize counterpart of `add_tags_max_body_chars` and reuses the same helpers (`limitMailContent()` / `truncateText()`). It is applied in `taPromptUtils.buildSummaryPrompt()`, the only place a summarize prompt is built (inline, webchat, on-receive and multi-message flows all go through it), to **each** email's `body_text` and `msg_text` right before `preparePrompt()` renders `prompt_summarize_email_template`. With several emails the limit is per email, not on the total (the number of emails is capped separately by `summarize_max_messages`).
+
 ### Missing special prompts
 
 The lookup helpers in `js/mzta-prompts.js` (`getSpamFilterPrompt()`, `getAddTagsPrompt()`, `getSummarizePrompt()`, …) are `Array.find()` over `_special_prompts` and return `undefined` when the user has removed or corrupted the entry. Every caller must guard before using the result, and `taPromptUtils.getDefaultLang()` uses optional chaining so a missing prompt yields `''` (no forced language) instead of throwing (issue #855).
